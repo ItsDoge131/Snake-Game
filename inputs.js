@@ -1,5 +1,3 @@
-// inputs.js - Handle user input for snake direction (keyboard and gamepad)
-
 let inputDirection = { x: 0, y: 0 };
 let lastInputDirection = { x: 0, y: 0 };
 
@@ -23,8 +21,6 @@ window.addEventListener('keydown', e => {
       break;
   }
 });
-
-// Gamepad support moved to snake.js to avoid conflicts
 
 function getInputDirection() {
   lastInputDirection = inputDirection;

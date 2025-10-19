@@ -1,5 +1,3 @@
-// snake.js - Classic Snake Game by ItsDoge131. (This game is easy, fun, and addictive! Try to beat your high score! :) )
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const gridSize = 20;
@@ -17,13 +15,13 @@ let score = 0;
 window.isPaused = false;
 let gameLoopId;
 
-// Load settings from localStorage
+
 let pauseKey = localStorage.getItem('pauseKey') || 'Escape';
 let restartKey = localStorage.getItem('restartKey') || 'r';
 let pauseGamepad = localStorage.getItem('pauseGamepad') || '0';
 let restartGamepad = localStorage.getItem('restartGamepad') || '1';
 
-// Gamepad button names
+
 const buttonNames = {
   0: 'A',
   1: 'B',
@@ -49,26 +47,25 @@ function getButtonDisplay(index) {
   return `${name} (${index})`;
 }
 
-// Load history from localStorage
+
 let scoreHistory = JSON.parse(localStorage.getItem('scoreHistory')) || [];
 
 function draw() {
   ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  // Create snake 
-  ctx.fillStyle = '#00FF00'; // Bright green (SNAKE)
+
+  ctx.fillStyle = '#00FF00';
   snake.forEach(segment => {
     ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
   });
 
-  // Create Fruit
-  ctx.fillStyle = '#FF0000'; // Bright red (FRUIT)
+  ctx.fillStyle = '#FF0000';
   ctx.fillRect(fruit.x, fruit.y, gridSize, gridSize);
 
-  // Update score display
+  
   document.getElementById('score').textContent = `Score: ${score}`;
 
-  // Pause overlay for when the game is paused  
+ 
   if (isPaused) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -87,13 +84,13 @@ function update() {
 
   const head = { x: snake[0].x + direction.x * gridSize, y: snake[0].y + direction.y * gridSize };
 
-  // Make Snake go around screen edges
+ 
   if (head.x < 0) head.x = canvasWidth - gridSize;
   else if (head.x >= canvasWidth) head.x = 0;
   if (head.y < 0) head.y = canvasHeight - gridSize;
   else if (head.y >= canvasHeight) head.y = 0;
 
-  // Check self collision (if snake collides with itself, reset the game)
+
   if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
     resetGame();
     return;
@@ -101,7 +98,7 @@ function update() {
 
   snake.unshift(head);
 
-  // Fruit Collision (eat fruits to grow the snake and increase score by 1 point (too much yapping))
+
   if (head.x === fruit.x && head.y === fruit.y) {
     score++;
     fruit = randomFruitPosition(snake, gridSize, canvasWidth, canvasHeight);
@@ -111,7 +108,7 @@ function update() {
 }
 
 function resetGame() {
-  // Add current score to history before resetting
+
   if (score > 0) {
     scoreHistory.push({score: score, date: new Date().toLocaleString()});
     localStorage.setItem('scoreHistory', JSON.stringify(scoreHistory));
@@ -125,7 +122,7 @@ function resetGame() {
   direction = { x: 1, y: 0 };
   fruit = randomFruitPosition(snake, gridSize, canvasWidth, canvasHeight);
   score = 0;
-  // Prevent fruit from going crazy when Snake collides with itself
+  
   inputDirection = { x: 0, y: 0 };
   lastInputDirection = { x: 0, y: 0 };
 }
@@ -149,7 +146,7 @@ function restartGame() {
     isPaused = false;
     const button = document.getElementById('pauseButton');
     button.textContent = 'Pause';
-    // Prevent fruit from going crazy (the game was very flashy) on restart by resetting input directions
+    
     inputDirection = { x: 0, y: 0 };
     lastInputDirection = { x: 0, y: 0 };
   }
@@ -168,7 +165,7 @@ window.addEventListener('keydown', e => {
   }
 });
 
-// Settings modal
+
 let currentSetting = null;
 let tempPauseKey = pauseKey;
 let tempRestartKey = restartKey;
@@ -218,7 +215,7 @@ document.getElementById('restartGamepadInput').addEventListener('focus', () => {
   currentSetting = 'restartGamepad';
 });
 
-// Gamepad support
+
 window.addEventListener('gamepadconnected', (e) => {
   console.log('Gamepad connected:', e.gamepad);
 });
@@ -232,9 +229,9 @@ function checkGamepad() {
   for (let i = 0; i < gamepads.length; i++) {
     const gamepad = gamepads[i];
     if (gamepad) {
-      // Only handle gamepad input if settings modal is not open
+    
       if (document.getElementById('settingsModal').style.display !== 'block') {
-        // D-Pad buttons
+        
         if (gamepad.buttons[12].pressed && lastInputDirection.y === 0) {
           inputDirection = { x: 0, y: -1 };
         } else if (gamepad.buttons[13].pressed && lastInputDirection.y === 0) {
@@ -245,7 +242,7 @@ function checkGamepad() {
           inputDirection = { x: 1, y: 0 };
         }
 
-        // Left stick
+      
         const threshold = 0.5;
         if (Math.abs(gamepad.axes[0]) > threshold || Math.abs(gamepad.axes[1]) > threshold) {
           if (Math.abs(gamepad.axes[1]) > Math.abs(gamepad.axes[0])) {
@@ -263,7 +260,7 @@ function checkGamepad() {
           }
         }
 
-        // Handle button presses for game controls
+        
         gamepad.buttons.forEach((button, index) => {
           if (button.pressed) {
             if (index.toString() === pauseGamepad) {
@@ -274,7 +271,7 @@ function checkGamepad() {
           }
         });
       } else {
-        // Handle button presses for settings
+        
         gamepad.buttons.forEach((button, index) => {
           if (button.pressed && currentSetting) {
             if (currentSetting === 'pauseGamepad') {
@@ -293,7 +290,6 @@ function checkGamepad() {
 
 setInterval(checkGamepad, 100);
 
-// Navigation
 document.getElementById('toGamepad').addEventListener('click', () => {
   document.getElementById('settingsModal').classList.add('show-gamepad');
 });
@@ -302,7 +298,6 @@ document.getElementById('toKeyboard').addEventListener('click', () => {
   document.getElementById('settingsModal').classList.remove('show-gamepad');
 });
 
-// Keyboard settings
 document.getElementById('saveKeyboard').addEventListener('click', () => {
   pauseKey = tempPauseKey;
   restartKey = tempRestartKey;
@@ -331,19 +326,18 @@ document.getElementById('resetKeyboard').addEventListener('click', () => {
   tempRestartKey = 'r';
   document.getElementById('pauseKeyInput').value = `${tempPauseKey} (${tempPauseKey.charCodeAt(0)})`;
   document.getElementById('restartKeyInput').value = `${tempRestartKey} (${tempRestartKey.charCodeAt(0)})`;
-  // Ensure inputs are editable
   document.getElementById('pauseKeyInput').readOnly = false;
   document.getElementById('restartKeyInput').readOnly = false;
-  currentSetting = null; // Clear any previous setting
+  currentSetting = null;
   alert('Keyboard settings reset to defaults!');
   setTimeout(() => {
     const input = document.getElementById('pauseKeyInput');
     input.focus();
-    input.select(); // Select the text to show it's active
+    input.select();
   }, 100);
 });
 
-// Gamepad settings
+
 document.getElementById('saveGamepad').addEventListener('click', () => {
   pauseGamepad = tempPauseGamepad;
   restartGamepad = tempRestartGamepad;
@@ -372,16 +366,15 @@ document.getElementById('resetGamepad').addEventListener('click', () => {
   tempRestartGamepad = '1';
   document.getElementById('pauseGamepadInput').value = getButtonDisplay(0);
   document.getElementById('restartGamepadInput').value = getButtonDisplay(1);
-  currentSetting = null; // Clear any previous setting
+  currentSetting = null;
   alert('Gamepad settings reset to defaults!');
   setTimeout(() => {
     const input = document.getElementById('pauseGamepadInput');
     input.focus();
-    input.select(); // Select the text to show it's active
+    input.select();
   }, 100);
 });
 
-// Close settings modal functionality
 document.querySelectorAll('.close-settings').forEach(closeBtn => {
   closeBtn.addEventListener('click', () => {
     document.getElementById('settingsModal').style.display = 'none';
@@ -391,7 +384,7 @@ document.querySelectorAll('.close-settings').forEach(closeBtn => {
   });
 });
 
-// Close note functionality
+
 document.querySelectorAll('.close-note').forEach(closeBtn => {
   closeBtn.addEventListener('click', () => {
     document.querySelectorAll('.note').forEach(note => {
@@ -401,18 +394,18 @@ document.querySelectorAll('.close-note').forEach(closeBtn => {
   });
 });
 
-// Check if note should be hidden on load
+
 if (localStorage.getItem('noteHidden') === 'true') {
   document.querySelectorAll('.note').forEach(note => {
     note.style.display = 'none';
   });
 }
 
-// History display
+
 function updateHistoryDisplay() {
   const historyList = document.getElementById('historyList');
   historyList.innerHTML = '';
-  scoreHistory.sort((a, b) => b.score - a.score); // Sort descending by score
+  scoreHistory.sort((a, b) => b.score - a.score);
   scoreHistory.forEach((entry, index) => {
     const item = document.createElement('div');
     item.className = 'history-item';
@@ -429,7 +422,7 @@ function updateHistoryDisplay() {
   });
 }
 
-// Initialize history display
+
 updateHistoryDisplay();
 
 gameLoopId = setInterval(gameLoop, 100);

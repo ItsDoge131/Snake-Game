@@ -1,5 +1,3 @@
-// utils.js - Utility functions for Snake Game (e.g., random fruit position, collision detection, etc.)
-
 function randomFruitPosition(snake, gridSize, canvasWidth, canvasHeight) {
   let position;
   do {
