@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #fff;
+        }
+        #score {
+            position: absolute;
+            top: 60px;
+            font-size: 24px;
+        }
+        #pauseButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #pauseButton:hover {
+            background-color: #555;
+        }
+        #restartButton {
+            margin-left: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #restartButton:hover {
+            background-color: #cc0000;
+        }
+        #settingsButton {
+            margin-left: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #settingsButton:hover {
+            background-color: #555;
+        }
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #222;
+            padding: 20px;
+            border: 2px solid #fff;
+            z-index: 1000;
+            width: 350px;
+            height: 320px;
+            overflow: hidden;
+            text-align: center;
+        }
+        .settings-section {
+            transition: transform 0.3s ease;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .settings-section label {
+            display: block;
+            margin: 10px 0;
+        }
+        .settings-section input {
+            display: block;
+            margin: 0 auto;
+        }
+        #keyboardSettings {
+            transform: translateX(0);
+        }
+        #gamepadSettings {
+            transform: translateX(100%);
+        }
+        #settingsModal.show-gamepad #keyboardSettings {
+            transform: translateX(-100%);
+        }
+        #settingsModal.show-gamepad #gamepadSettings {
+            transform: translateX(0);
+        }
+        #settingsModal input {
+            margin: 10px 0;
+            padding: 5px;
+            background-color: #555;
+            color: #fff;
+            border: 1px solid #fff;
+            width: 100px;
+            text-align: center;
+        }
+        #pauseGamepadInput, #restartGamepadInput {
+            width: 150px;
+        }
+        .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            cursor: pointer;
+            color: #fff;
+            background: #000;
+            border: 2px solid #fff;
+            padding: 5px;
+            font-family: monospace;
+        }
+        .arrow:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        .arrow:active {
+            background-color: #555;
+            border-color: #555;
+        }
+        #toGamepad {
+            right: 10px;
+        }
+        #toKeyboard {
+            left: 10px;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            align-items: center;
+        }
+        .buttons button {
+            padding: 8px 12px;
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            font-family: monospace;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .buttons button:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        .buttons button:active {
+            background-color: #555;
+            border-color: #555;
+        }
+
+        .close-settings {
+            padding: 8px 12px;
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #fff;
+            font-family: monospace;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .close-settings:hover {
+            background-color: #fff;
+            color: #000;
+        }
+        .close-settings:active {
+            background-color: #555;
+            border-color: #555;
+        }
+        #history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 400px;
+            background-color: #111;
+            padding: 10px;
+            border: 1px solid #fff;
+        }
+        .history-item {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        .history-item:hover {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div>
+        <button id="pauseButton">Pause</button>
+        <button id="restartButton">Restart</button>
+        <button id="settingsButton">Settings</button>
+    </div>
+    <div id="settingsModal">
+        <div id="keyboardSettings" class="settings-section">
+            <h3>Keyboard Settings</h3>
+            <label>Pause Key: <input type="text" id="pauseKeyInput"></label><br>
+            <label>Restart Key: <input type="text" id="restartKeyInput"></label><br>
+            <div class="note" style="color: red; font-size: 12px; margin: 5px 0; position: relative;">
+                NOTE: The keybinds are broken when pressing "Reset"—fields become uneditable and do not accept new input.
+                <span class="close-note" style="position: absolute; top: -10px; right: 0; cursor: pointer; font-size: 14px;">&times;</span>
+            </div>
+            <div class="buttons">
+                <button id="resetKeyboard">Reset</button>
+                <button id="cancelKeyboard">Cancel</button>
+                <button id="saveKeyboard">Save</button>
+                <button id="closeSettings" class="close-settings">Close</button>
+            </div>
+            <button id="toGamepad" class="arrow">→</button>
+        </div>
+        <div id="gamepadSettings" class="settings-section">
+            <h3>Gamepad Settings</h3>
+            <label>Pause Button: <input type="text" id="pauseGamepadInput"></label><br>
+            <label>Restart Button: <input type="text" id="restartGamepadInput"></label><br>
+            <div class="note" style="color: red; font-size: 12px; margin: 5px 0; position: relative;">
+                NOTE: The keybinds are broken when pressing "Reset"—fields become uneditable and do not accept new input.
+                <span class="close-note" style="position: absolute; top: -10px; right: 0; cursor: pointer; font-size: 14px;">&times;</span>
+            </div>
+            <div class="buttons">
+                <button id="resetGamepad">Reset</button>
+                <button id="cancelGamepad">Cancel</button>
+                <button id="saveGamepad">Save</button>
+                <button id="closeSettings" class="close-settings">Close</button>
+            </div>
+            <button id="toKeyboard" class="arrow">←</button>
+        </div>
+    </div>
+    <div id="history">
+        <h4>Score History</h4>
+        <div id="historyList"></div>
+    </div>
+    <script src="utils.js"></script>
+    <script src="inputs.js"></script>
+    <script src="snake.js"></script>
+</body>
+</html>
